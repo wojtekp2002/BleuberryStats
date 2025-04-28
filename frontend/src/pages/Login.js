@@ -1,85 +1,75 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { FaSeedling, FaEnvelope, FaLock } from 'react-icons/fa';
+import '../App.css'; // upewnij się, że masz gradient i klasy z App.css
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
 
   const handleChange = e => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const { data } = await axios.post('/auth/login', formData);
-      const { user, token } = data;
-
-      console.log('RESPONSE user:', user);
-      console.log('RESPONSE token:', token);
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-
-      if (user.role === 'EMPLOYER') {
-        navigate('/dashboard/employer');
-      } else if (user.role === 'EMPLOYEE') {
-        navigate('/dashboard/employee');
-      } else {
-        console.warn('Nieznana rola:', user.role);
-        setMessage('Nieznana rola użytkownika');
-      }
+      const { data } = await axios.post('/auth/login', form);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/');
     } catch (err) {
-      console.error(err);
       setMessage(err.response?.data?.message || 'Błąd logowania');
     }
   };
 
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center"
-         style={{ background: 'linear-gradient(to bottom right, #001f3f, #0074D9)' }}>
-      <div className="col-md-4">
-        <h2 className="text-center mb-4" style={{cursor:'pointer'}} onClick={() => navigate('/')}>
-          <strong>BlueberryStats</strong>
-        </h2>
-        <div className="card shadow w-100">
-          <div className="card-body p-4">
-            <h2 className="mb-4">Logowanie</h2>
-            {message && <div className="alert alert-info">{message}</div>}
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  className="form-control"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Hasło</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-primary w-100">
-                Zaloguj
-              </button>
-              <p className="mt-2 text-center">
-                Nie masz konta? <Link to="/register">Zarejestruj się</Link>
-              </p>
-            </form>
-          </div>
+    <div className="main-background d-flex align-items-center justify-content-center">
+      <div className="card card-custom shadow p-4" style={{ width: 360 }}>
+        <div className="text-center mb-4">
+          <FaSeedling size={48} className="text-primary" />
+          <h2 className="mt-2" style={{ fontWeight: 'bold' }}>BlueberryStats</h2>
         </div>
+
+        {message && <div className="alert alert-danger">{message}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="input-group mb-3">
+            <span className="input-group-text bg-dark text-white"><FaEnvelope/></span>
+            <input
+              type="email"
+              name="email"
+              className="form-control"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-group mb-4">
+            <span className="input-group-text bg-dark text-white"><FaLock/></span>
+            <input
+              type="password"
+              name="password"
+              className="form-control"
+              placeholder="Hasło"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-custom btn-primary w-100 mb-3">
+            Zaloguj
+          </button>
+
+          <p className="text-center mb-0">
+            Nie masz konta? <Link to="/register" className="text-warning">Zarejestruj się</Link>
+          </p>
+        </form>
       </div>
     </div>
   );

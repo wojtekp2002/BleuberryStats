@@ -7,15 +7,19 @@ export class AuthController {
 
   @Post('register')
   async register(
-    @Body() body: { email: string; password: string; role: string; employer: string; ratePerKg: number }
+    @Body() body: {
+      email: string;
+      password: string;
+      role: 'EMPLOYEE' | 'EMPLOYER';
+      adminCode?: string;
+    }
   ) {
     try {
       const user = await this.authService.register(
         body.email,
         body.password,
         body.role,
-        body.employer,
-        body.ratePerKg,
+        body.adminCode,
       );
       return { message: 'Zarejestrowano pomyślnie', user };
     } catch (err) {

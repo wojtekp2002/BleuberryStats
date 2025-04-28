@@ -8,6 +8,7 @@ import PrivateRoute from './components/PrivateRoute';
 import axios from 'axios';
 import MyGroupPage from './pages/MyGroup';
 import PaymentsPage from './pages/Payments';
+import EntriesPage from './pages/Entries';
 
 function App() {
   const raw = localStorage.getItem('user');
@@ -43,6 +44,7 @@ function App() {
 
 
         <Route path='/group' element={<PrivateRoute><MyGroupPage/></PrivateRoute>}/>
+        <Route path="/entries" element={<PrivateRoute><EntriesPage/></PrivateRoute>} />
         <Route path='/payments' element={<PrivateRoute><PaymentsPage/></PrivateRoute>}/>
 
         <Route path="*" element={<Navigate to="/" replace />} />

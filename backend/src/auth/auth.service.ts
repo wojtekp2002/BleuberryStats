@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
@@ -11,17 +11,35 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
-  async register(email: string, password: string, role: string, employer: string, ratePerKg: number) {
+  async register(
+    email: string,
+    password: string,
+    role: 'EMPLOYEE' | 'EMPLOYER',
+    adminCode?: string,
+  ) {
+    //Jeśli pracodawca, sprawdzanie adminCode
+    if (role === 'EMPLOYER') {
+      if (adminCode !== 'admin1234') {
+        throw new UnauthorizedException('Niepoprawny kod administratora');
+      }
+    }
+
+    //Unikalność emaila
     const existing = await this.userModel.findOne({ email });
-    if (existing) throw new Error('Użytkownik o takim email już istnieje');
-  
+    if (existing) {
+      throw new BadRequestException('Użytkownik o takim emailu już istnieje');
+    }
+
+    //Hash hasła
     const hashed = await bcrypt.hash(password, 10);
+
+    // Twórz usera z domyślną rolą
     const user = new this.userModel({
       email,
       password: hashed,
-      role: role || 'EMPLOYEE',
-      employer: employer || null,
-      ratePerKg: ratePerKg || 1.0,
+      role,
+      employer: role === 'EMPLOYEE' ? null : undefined,
+      ratePerKg: role === 'EMPLOYEE' ? undefined : undefined, 
     });
     await user.save();
     return user;
