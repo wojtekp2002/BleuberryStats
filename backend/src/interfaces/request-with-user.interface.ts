@@ -1,8 +1,10 @@
 import { Request } from 'express';
 
 export interface RequestWithUser extends Request {
-  user?: {
+  user: {
     userId: string;
-    role: string;
+    role: 'EMPLOYEE' | 'EMPLOYER';
+    iat?: number;
+    exp?: number;
   };
 }

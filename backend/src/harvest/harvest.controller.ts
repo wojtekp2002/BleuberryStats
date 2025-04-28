@@ -1,50 +1,60 @@
-import { Controller, Post, Get, Patch, Body, Param, Req, UseGuards } from '@nestjs/common';
+// src/harvest/harvest.controller.ts
+
+import {
+  Controller, Post, Get, Patch, Body, Param, Req, UseGuards, ForbiddenException
+} from '@nestjs/common';
 import { HarvestService } from './harvest.service';
-import { RequestWithUser } from 'src/interfaces/request-with-user.interface';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RequestWithUser } from '../interfaces/request-with-user.interface';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('harvest')
+@UseGuards(JwtAuthGuard)
 export class HarvestController {
   constructor(private harvestService: HarvestService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
   async addHarvest(
     @Body() body: { employeeId: string; kg: number },
     @Req() req: RequestWithUser
   ) {
-    const user = req.user;
-    if (!user || user.role !== 'EMPLOYER') {
-      throw new Error('Brak uprawnień');
+    if (req.user.role !== 'EMPLOYER') {
+      throw new ForbiddenException('Brak uprawnień');
     }
-    return this.harvestService.addHarvest(user.userId, body.employeeId, body.kg);
+    return this.harvestService.addHarvest(req.user.userId, body.employeeId, body.kg);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
   async getHarvests(@Req() req: RequestWithUser) {
-    const user = req.user;
-    if (!user) throw new Error('Brak danych użytkownika');
-    return this.harvestService.getHarvests(user.userId, user.role);
+    return this.harvestService.getHarvests(req.user.userId, req.user.role);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch(':harvestId/payout')
-  async payoutOne(@Param('harvestId') harvestId: string, @Req() req: RequestWithUser) {
-    const user = req.user;
-    if (!user || user.role !== 'EMPLOYER') {
-      throw new Error('Brak uprawnień');
+  async payoutOne(
+    @Param('harvestId') harvestId: string,
+    @Req() req: RequestWithUser
+  ) {
+    if (req.user.role !== 'EMPLOYER') {
+      throw new ForbiddenException('Brak uprawnień');
     }
-    return this.harvestService.payoutOne(user.userId, harvestId);
+    return this.harvestService.payoutOne(req.user.userId, harvestId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch('payout-all/:employeeId')
-  async payoutAll(@Param('employeeId') employeeId: string, @Req() req: RequestWithUser) {
-    const user = req.user;
-    if (!user || user.role !== 'EMPLOYER') {
-      throw new Error('Brak uprawnień');
+  async payoutAll(
+    @Param('employeeId') employeeId: string,
+    @Req() req: RequestWithUser
+  ) {
+    if (req.user.role !== 'EMPLOYER') {
+      throw new ForbiddenException('Brak uprawnień');
     }
-    return this.harvestService.payoutAll(user.userId, employeeId);
+    return this.harvestService.payoutAll(req.user.userId, employeeId);
+  }
+
+  @Get('summary')
+  async summary(@Req() req: RequestWithUser) {
+    if (req.user.role !== 'EMPLOYER') {
+      throw new ForbiddenException('Brak uprawnień');
+    }
+    return this.harvestService.getEmployerSummary(req.user.userId);
   }
 }
