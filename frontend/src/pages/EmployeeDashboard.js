@@ -23,7 +23,7 @@ export default function EmployeeDashboard() {
       <Navbar />
       <div className="main-background">
         <div className="container py-5">
-          <h1 className="mb-4" style={{fontWeight:'bold'}}>Panel Pracownika</h1>
+          <h1 className="mb-4" style={{fontWeight:'bold'}}>Twoje statystyki:</h1>
 
           {/* Statystyki */}
           <div className="row g-4 mb-5">

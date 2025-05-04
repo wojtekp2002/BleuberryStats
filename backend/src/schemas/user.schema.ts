@@ -1,22 +1,32 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+export type UserDocument = User & Document;
+
 @Schema()
-export class User extends Document {
-  
+export class User {
   @Prop({ unique: true, required: true })
   email: string;
 
   @Prop({ required: true })
   password: string;
 
-  @Prop({ default: 'EMPLOYEE' })
-  role: string;
+  @Prop({ 
+    required: true, 
+    enum: ['EMPLOYEE', 'EMPLOYER'], 
+    default: 'EMPLOYEE' 
+  })
+  role: 'EMPLOYEE' | 'EMPLOYER';
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
-  employer: User;
+  // → employer jest teraz ObjectId lub null
+  @Prop({ 
+    type: Types.ObjectId, 
+    ref: User.name, 
+    default: null 
+  })
+  employer?: Types.ObjectId | null;
 
-  @Prop({ default: 1.0 })
+  @Prop({ type: Number, default: 1.0 })
   ratePerKg: number;
 }
 

@@ -1,5 +1,3 @@
-// src/harvest/harvest.service.ts
-
 import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';

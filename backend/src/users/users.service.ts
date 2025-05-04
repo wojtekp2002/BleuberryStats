@@ -1,44 +1,93 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User } from 'src/schemas/user.schema';
-import * as bcrypt from 'bcrypt';
+import { Model, Types } from 'mongoose';
+import { User, UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) {}
 
+  /** Lista pracowników dla danego pracodawcy */
   async findByEmployer(employerId: string) {
-    return this.userModel
-      .find({ employer: employerId, role: 'EMPLOYEE' })
+    //Rzutujemy string na ObjectId
+    const employerOid = new Types.ObjectId(employerId);
+    console.log('→ findByEmployer • employerOid:', employerOid);
+
+    const employees = await this.userModel
+      .find({ employer: employerOid, role: 'EMPLOYEE' })
       .select('email ratePerKg')
+      .exec();
+
+    console.log('→ findByEmployer • found:', employees);
+    return employees;
+  }
+
+  /** Podpowiedzi: rolę EMPLOYEE bez przypisanego pracodawcy */
+  async searchAvailable(query: string) {
+    return this.userModel
+      .find({
+        role: 'EMPLOYEE',
+        employer: null,
+        email: { $regex: query, $options: 'i' },
+      })
+      .select('email')
+      .limit(10)
       .exec();
   }
 
-  async createEmployee(employerId: string, email: string, password: string, ratePerKg: number) {
-    const existing = await this.userModel.findOne({ email });
-    if (existing) throw new BadRequestException('Taki email jest już użyty');
-    const hashed = await bcrypt.hash(password, 10);
-    const user = new this.userModel({
-      email,
-      password: hashed,
-      role: 'EMPLOYEE',
-      employer: employerId,
-      ratePerKg,
-    });
-    return user.save();
+  /** Dodaje istniejącego pracownika do grupy (ustawia pole employer) */
+  async addToGroup(email: string, employerId: string) {
+    const employeeDoc = await this.userModel
+      .findOne({ email, role: 'EMPLOYEE' })
+      .exec();
+    
+        console.log('→ addToGroup • found employeeDoc:', employeeDoc);
+
+        if (!employeeDoc) {
+        throw new BadRequestException('Nie znaleziono pracownika o podanym emailu');
+        }
+
+        if (employeeDoc.employer) {
+        throw new BadRequestException('Pracownik już należy do jakiejś grupy');
+        }
+
+        employeeDoc.employer = new Types.ObjectId(employerId);
+        await employeeDoc.save();
+
+        console.log('→ addToGroup • after save employeeDoc.employer:', employeeDoc.employer);
+
+    return { message: 'Dodano pracownika do grupy', employeeId: employeeDoc._id };
   }
 
-  async updateEmployee(employerId: string, id: string, ratePerKg: number) {
-    const user = await this.userModel.findById(id);
-    if (!user || String(user.employer) !== employerId) throw new ForbiddenException();
-    user.ratePerKg = ratePerKg;
-    return user.save();
+  /** Aktualizuje stawkę za kg dla pracownika w Twojej grupie */
+  async updateRate(
+    employeeId: string,
+    employerId: string,
+    ratePerKg: number
+  ) {
+    const employeeDoc = await this.userModel.findById(employeeId).exec();
+    if (!employeeDoc || String(employeeDoc.employer) !== employerId) {
+      throw new ForbiddenException('Nie masz uprawnień do zmiany stawki tego pracownika');
+    }
+
+    employeeDoc.ratePerKg = ratePerKg;
+    await employeeDoc.save();
+
+    return { message: 'Zaktualizowano stawkę', employeeId };
   }
 
-  async deleteEmployee(employerId: string, id: string) {
-    const user = await this.userModel.findById(id);
-    if (!user || String(user.employer) !== employerId) throw new ForbiddenException();
-    return this.userModel.deleteOne({ _id: id }).exec();
+  /** Usuwa pracownika z grupy (ustawia employer=null) */
+  async removeFromGroup(employeeId: string, employerId: string) {
+    const employeeDoc = await this.userModel.findById(employeeId).exec();
+    if (!employeeDoc || String(employeeDoc.employer) !== employerId) {
+      throw new ForbiddenException('Nie masz uprawnień do usunięcia tego pracownika');
+    }
+
+    employeeDoc.employer = null;
+    await employeeDoc.save();
+
+    return { message: 'Usunięto pracownika z grupy', employeeId };
   }
 }

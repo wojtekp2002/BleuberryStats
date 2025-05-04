@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaSeedling, FaEnvelope, FaLock } from 'react-icons/fa';
-import '../App.css'; // upewnij się, że masz gradient i klasy z App.css
+import '../App.css'; 
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -19,7 +19,13 @@ export default function LoginPage() {
       const { data } = await axios.post('/auth/login', form);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/');
+
+      //dashboard od roli
+      if (data.user.role === 'EMPLOYER') {
+        navigate('/dashboard/employer', { replace: true });
+      } else {
+        navigate('/dashboard/employee', { replace: true });
+      }
     } catch (err) {
       setMessage(err.response?.data?.message || 'Błąd logowania');
     }

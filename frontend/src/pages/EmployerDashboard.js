@@ -24,7 +24,6 @@ export default function EmployerDashboard() {
       <Navbar />
       <div className="main-background">
         <div className="container py-5">
-          <h1 className="mb-4" style={{fontWeight:'bold'}}>Panel Pracodawcy</h1>
 
           {/* Statystyki */}
           <div className="row g-4 mb-5">
@@ -39,7 +38,7 @@ export default function EmployerDashboard() {
             <div className="col-md-6 col-lg-4">
               <div className="card card-custom text-center">
                 <div className="card-body">
-                  <h5 className="card-title">Do wypłaty</h5>
+                  <h5 className="card-title">Zaległe wypłaty</h5>
                   <p className="display-6">{summary.totalDue.toFixed(2)} PLN</p>
                 </div>
               </div>

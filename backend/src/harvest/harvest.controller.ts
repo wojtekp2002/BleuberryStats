@@ -1,5 +1,3 @@
-// src/harvest/harvest.controller.ts
-
 import {
   Controller, Post, Get, Patch, Body, Param, Req, UseGuards, ForbiddenException
 } from '@nestjs/common';
@@ -25,7 +23,13 @@ export class HarvestController {
 
   @Get()
   async getHarvests(@Req() req: RequestWithUser) {
-    return this.harvestService.getHarvests(req.user.userId, req.user.role);
+    console.log('→ getHarvests • req.user =', req.user);
+    const out = await this.harvestService.getHarvests(
+      req.user.userId, 
+      req.user.role
+    );
+    console.log('→ getHarvests → found:', out);
+    return out;
   }
 
   @Patch(':harvestId/payout')

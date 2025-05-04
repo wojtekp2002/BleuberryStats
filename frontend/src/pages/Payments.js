@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/NavbarComp';  
+import Navbar from '../components/NavbarComp';
 import axios from 'axios';
 
 export default function PaymentsPage() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const token = localStorage.getItem('token');  //token
 
-  const [harvests, setHarvests] = useState([]);
-  const [summary, setSummary] = useState([]);
-  const [error, setError] = useState('');
+  //token
+  const raw = localStorage.getItem('user');
+  const user = raw ? JSON.parse(raw) : null;
+  const token = localStorage.getItem('token');
 
-  //fetch dla pracownika
+  const [harvests, setHarvests] = useState([]); // dla pracownika
+  const [summary, setSummary]   = useState([]); // dla pracodawcy
+  const [error, setError]       = useState('');
+
+  //Fetch history (pracownik) lub summary (pracodawca)
   const fetchHarvests = async () => {
     try {
       const { data } = await axios.get(
@@ -21,12 +24,11 @@ export default function PaymentsPage() {
       );
       setHarvests(data);
     } catch (err) {
-      console.error('Błąd pobierania zbiorów:', err);
-      setError('Nie można pobrać danych pracownika.');
+      console.error(err);
+      setError('Nie można pobrać historii.');
     }
   };
 
-  //fetch dla pracodawcy
   const fetchSummary = async () => {
     try {
       const { data } = await axios.get(
@@ -35,25 +37,26 @@ export default function PaymentsPage() {
       );
       setSummary(data);
     } catch (err) {
-      console.error('Błąd pobierania podsumowania:', err);
-      setError('Brak uprawnień lub problem z siecią.');
+      console.error(err);
+      setError('Nie można pobrać podsumowania.');
     }
   };
 
   useEffect(() => {
-    if (!token || !user) {
+    if (!user || !token) {
       navigate('/login');
       return;
     }
+
     if (user.role === 'EMPLOYER') {
       fetchSummary();
     } else {
       fetchHarvests();
     }
-  }, [navigate, token, user]);
+  }, [navigate, user, token]);
 
-  //wypłata masowa (pracodawca)
-  const payoutAll = async (employeeId) => {
+  //Wypłacenie pracownikowi
+  const payoutAll = async employeeId => {
     try {
       await axios.patch(
         `/harvest/payout-all/${employeeId}`,
@@ -62,12 +65,12 @@ export default function PaymentsPage() {
       );
       fetchSummary();
     } catch (err) {
-      console.error('Błąd wypłaty:', err);
-      setError('Nie udało się wypłacić.');
+      console.error(err);
+      setError('Błąd podczas wypłaty.');
     }
   };
 
-  // sumujemy dla pracownika
+  //Obliczenie sumy dla pracownika
   const totalDue = harvests
     .filter(h => !h.paidOut)
     .reduce((sum, h) => sum + h.amount, 0);
@@ -80,12 +83,12 @@ export default function PaymentsPage() {
         {error && <div className="alert alert-danger">{error}</div>}
 
         {user.role === 'EMPLOYER' ? (
-          // Widok dla pracodawcy
+          //Widok pracodawcy
           <div className="table-responsive">
             <table className="table table-hover">
               <thead>
                 <tr>
-                  <th>Pracownik</th>
+                  <th>Pracownik (email)</th>
                   <th>kg</th>
                   <th>Kwota</th>
                   <th>Akcja</th>
@@ -109,14 +112,14 @@ export default function PaymentsPage() {
                 ))}
                 {!summary.length && (
                   <tr>
-                    <td colSpan="4" className="text-center">Brak wypłat do wypłacenia</td>
+                    <td colSpan="4" className="text-center">Brak wypłat</td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
         ) : (
-          // Widok dla pracownika
+          //Widok pracownika
           <>
             <div className="card mb-4">
               <div className="card-body">
