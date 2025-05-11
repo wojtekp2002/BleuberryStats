@@ -1,6 +1,6 @@
 import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Harvest } from 'src/schemas/harvest.schema';
 import { User } from 'src/schemas/user.schema';
 
@@ -33,16 +33,38 @@ export class HarvestService {
 
   // Pobieranie wpisów zbiorów – w zależności od roli
   async getHarvests(userId: string, role: string) {
+    // Rzutujemy zawsze na ObjectId
+    const uid = new Types.ObjectId(userId);
+    console.log('→ HarvestService.getHarvests • role:', role, '• uid:', uid);
+
     if (role === 'EMPLOYEE') {
-      return this.harvestModel.find({ employee: userId }).sort({ date: -1 });
-    } else if (role === 'EMPLOYER') {
-      const employees = await this.userModel.find({ employer: userId }).select('_id');
+      const personal = await this.harvestModel
+        .find({ employee: uid })
+        .sort({ date: -1 })
+        .exec();
+      console.log('→ HarvestService.getHarvests • employee harvests:', personal);
+      return personal;
+    }
+
+    if (role === 'EMPLOYER') {
+      // 1) Kto jest w Twojej grupie?
+      const employees = await this.userModel
+        .find({ employer: uid, role: 'EMPLOYEE' })
+        .select('_id')
+        .exec();
+      console.log('→ HarvestService.getHarvests • employees:', employees);
+
       const ids = employees.map(e => e._id);
-      return this.harvestModel
+      // 2) Szukamy wpisów dla tych empów:
+      const all = await this.harvestModel
         .find({ employee: { $in: ids } })
         .sort({ date: -1 })
-        .populate('employee');
+        .populate('employee')
+        .exec();
+      console.log('→ HarvestService.getHarvests • employer harvests:', all);
+      return all;
     }
+
     return [];
   }
 

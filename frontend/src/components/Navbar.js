@@ -34,7 +34,7 @@ export default function Navbar() {
             {/* Dashboard */}
             <li className="nav-item">
               <NavLink className="nav-link" to="/">
-                <FaChartBar className="me-1" /> Dashboard
+                <FaChartBar className="me-1" /> Statystyki
               </NavLink>
             </li>
 

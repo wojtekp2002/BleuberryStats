@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/Login';
@@ -51,9 +50,9 @@ function App() {
         />
 
         {/* Inne zakładki */}
-        <Route path="/group"   element={<PrivateRoute><MyGroupPage   /></PrivateRoute>} />
-        <Route path="/entries" element={<PrivateRoute><EntriesPage   /></PrivateRoute>} />
-        <Route path="/payments" element={<PrivateRoute><PaymentsPage  /></PrivateRoute>} />
+        <Route path="/group"   element={<PrivateRoute><MyGroupPage/></PrivateRoute>} />
+        <Route path="/entries" element={<PrivateRoute><EntriesPage/></PrivateRoute>} />
+        <Route path="/payments" element={<PrivateRoute><PaymentsPage/></PrivateRoute>} />
 
         {/* Wszystkie inne ścieżki */}
         <Route path="*" element={<Navigate to="/" replace />} />

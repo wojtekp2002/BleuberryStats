@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from '../components/NavbarComp';
+import Navbar from '../components/Navbar';
 import axios from 'axios';
 
 export default function EmployerDashboard() {
@@ -21,7 +21,7 @@ export default function EmployerDashboard() {
 
   return (
     <>
-      <Navbar />
+      <Navbar/>
       <div className="main-background">
         <div className="container py-5">
 

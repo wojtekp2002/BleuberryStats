@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from '../components/NavbarComp';
+import Navbar from '../components/Navbar';
 import axios from 'axios';
 
 export default function EmployeeDashboard() {
@@ -20,7 +20,7 @@ export default function EmployeeDashboard() {
 
   return (
     <>
-      <Navbar />
+      <Navbar/>
       <div className="main-background">
         <div className="container py-5">
           <h1 className="mb-4" style={{fontWeight:'bold'}}>Twoje statystyki:</h1>
