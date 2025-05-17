@@ -18,6 +18,9 @@ export class Harvest extends Document {
 
   @Prop({ default: false })
   paidOut: boolean;
+
+  @Prop({ default: null })
+  payoutDate?: Date;  // Data wypłaty, jeżeli paidOut=true
 }
 
 export const HarvestSchema = SchemaFactory.createForClass(Harvest);

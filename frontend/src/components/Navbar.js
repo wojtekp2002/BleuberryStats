@@ -1,14 +1,24 @@
+// src/components/Navbar.js
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaSeedling, FaUsers, FaList, FaMoneyBillWave, FaChartBar } from 'react-icons/fa';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const raw = localStorage.getItem('user');
+  const user = raw ? JSON.parse(raw) : null;
+
   const logout = () => {
     localStorage.clear();
     navigate('/login');
   };
+
+  // Direct path to dashboard based on role
+  const homePath = user
+    ? user.role === 'EMPLOYER'
+      ? '/dashboard/employer'
+      : '/dashboard/employee'
+    : '/login';
 
   return (
     <nav className="navbar navbar-expand-lg navbar-custom shadow">
@@ -16,7 +26,7 @@ export default function Navbar() {
         <span
           className="navbar-brand"
           style={{ cursor: 'pointer', fontWeight: 'bold' }}
-          onClick={() => navigate('/')}
+          onClick={() => navigate(homePath)}
         >
           <FaSeedling className="me-1" /> BlueberryStats
         </span>
@@ -31,9 +41,8 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="navmenu">
           <ul className="navbar-nav me-auto">
-            {/* Dashboard */}
             <li className="nav-item">
-              <NavLink className="nav-link" to="/">
+              <NavLink className="nav-link" to={homePath}>
                 <FaChartBar className="me-1" /> Statystyki
               </NavLink>
             </li>
@@ -53,7 +62,6 @@ export default function Navbar() {
               </>
             )}
 
-            {/* Wypłaty dla obu ról */}
             <li className="nav-item">
               <NavLink className="nav-link" to="/payments">
                 <FaMoneyBillWave className="me-1" /> Wypłaty
@@ -75,5 +83,5 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-);
+  );
 }
