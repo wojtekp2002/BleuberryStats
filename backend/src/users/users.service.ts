@@ -11,7 +11,7 @@ export class UsersService {
 
   /** Lista pracowników dla danego pracodawcy */
   async findByEmployer(employerId: string) {
-    //Rzutujemy string na ObjectId
+    //String na ObjectId
     const employerOid = new Types.ObjectId(employerId);
     console.log('→ findByEmployer • employerOid:', employerOid);
 
@@ -24,7 +24,7 @@ export class UsersService {
     return employees;
   }
 
-  /** Podpowiedzi: rolę EMPLOYEE bez przypisanego pracodawcy */
+  /** Podpowiedzi searchbar: role EMPLOYEE bez przypisanego pracodawcy */
   async searchAvailable(query: string) {
     return this.userModel
       .find({

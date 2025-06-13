@@ -20,7 +20,7 @@ export class Harvest extends Document {
   paidOut: boolean;
 
   @Prop({ default: null })
-  payoutDate?: Date;  // Data wypłaty, jeżeli paidOut=true
+  payoutDate?: Date;  
 }
 
 export const HarvestSchema = SchemaFactory.createForClass(Harvest);

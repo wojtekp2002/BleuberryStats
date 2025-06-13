@@ -18,7 +18,6 @@ export class User {
   })
   role: 'EMPLOYEE' | 'EMPLOYER';
 
-  // → employer jest teraz ObjectId lub null
   @Prop({ 
     type: Types.ObjectId, 
     ref: User.name, 

@@ -14,7 +14,7 @@ export default function EntriesPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // 1) Pobierz listę pracowników
+  //Pobieranie listy pracowników
   const fetchEmployees = async () => {
     try {
       const { data } = await axios.get('/users', {
@@ -27,7 +27,7 @@ export default function EntriesPage() {
     }
   };
 
-  // 2) Pobierz historię wszystkich wpisów
+  //Pobieranie historii wszystkich wpisów
   const fetchHarvests = async () => {
     try {
       const { data } = await axios.get('/harvest', {
@@ -48,7 +48,7 @@ export default function EntriesPage() {
     fetchHarvests();
   }, [navigate, token, user.role]);
 
-  // 3) Obsługa formularza dodawania
+  //Obsługa formularza dodawania
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
